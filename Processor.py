@@ -3,6 +3,7 @@ import datetime
 import shutil
 import os
 import subprocess
+import time
 import traceback
 from typing import Dict, List, Tuple, Union
 import logging
@@ -11,9 +12,10 @@ import utils
 from BiliLive import BiliLive
 from itertools import groupby
 import jsonlines
+from xml.dom.minidom import Document
 
 
-def parse_danmu(dir_name):
+def parse_danmu(start_time: datetime.datetime, dir_name):
     danmu_list = []
     if os.path.exists(os.path.join(dir_name, 'danmu.jsonl')):
         with jsonlines.open(os.path.join(dir_name, 'danmu.jsonl')) as reader:
@@ -24,6 +26,9 @@ def parse_danmu(dir_name):
                     "uid": str(obj['user_info']['user_id'])
                 })
     if os.path.exists(os.path.join(dir_name, 'superchat.jsonl')):
+        doc = Document()
+        i = doc.createElement("i")
+        doc.appendChild(i)
         with jsonlines.open(os.path.join(dir_name, 'superchat.jsonl')) as reader:
             for obj in reader:
                 danmu_list.append({
@@ -31,6 +36,17 @@ def parse_danmu(dir_name):
                     "time": obj['time'],
                     "uid": str(obj['user_id'])
                 })
+                sc = doc.createElement("sc")
+                sc.setAttribute('ts', str((int(obj['time']) - int(start_time.timestamp()))))
+                sc.setAttribute('user', str(obj['user_name']))
+                sc.setAttribute('price', str(obj['price']))
+                sc.setAttribute('time', '60')
+                text = doc.createTextNode(str(obj['text']))
+                sc.appendChild(text)
+                i.appendChild(sc)
+            f = open(os.path.join(dir_name, 'superchat.xml'), 'w', encoding='utf-8')
+            doc.writexml(f, indent='\t', newl='\n', addindent='\t', encoding='utf-8')
+            f.close()
     danmu_list = sorted(danmu_list, key=lambda x: x['time'])
     return danmu_list
 
@@ -112,10 +128,20 @@ def flv2ts(input_file: str, output_file: str, ffmpeg_logfile_hander) -> Union[su
         return err
 
 
-def concat(merge_conf_path: str, merged_file_path: str, ffmpeg_logfile_hander) -> Union[subprocess.CompletedProcess, subprocess.CalledProcessError]:
+def xml2ass(input_file: str, output_file: str, ffmpeg_logfile_hander) -> Union[subprocess.CompletedProcess, subprocess.CalledProcessError]:
     try:
         ret = subprocess.run(
-            f"ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -c copy -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}", shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
+            f"dfcli -o {output_file} -i {input_file}", shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
+        return ret
+    except subprocess.CalledProcessError as err:
+        traceback.print_exc()
+        return err
+
+
+def concat(merge_conf_path: str, merged_file_path: str, ass_file_path: str, ffmpeg_logfile_hander) -> Union[subprocess.CompletedProcess, subprocess.CalledProcessError]:
+    try:
+        ret = subprocess.run(
+            f'ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -acodec aac -ab 260k -bsf:v h264_mp4toannexb -c:v h264_nvenc -b:v 5900k -f mpegts -vf "scale=1920:1080,subtitles={ass_file_path}" -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}', shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
         return ret
     except subprocess.CalledProcessError as err:
         traceback.print_exc()
@@ -174,7 +200,9 @@ class Processor(BiliLive):
                     self.times.append((start_time, duration))
                     f.write(
                         f"file '{os.path.abspath(ts_path)}'\n")
-        ret = concat(self.merge_conf_path, self.merged_file_path,
+        parse_danmu(self.global_start, self.danmu_path)
+        xml2ass(os.path.join(self.danmu_path, 'superchat.xml'), os.path.join(self.danmu_path, 'superchat.ass'), self.ffmpeg_logfile_hander)
+        ret = concat(self.merge_conf_path, self.merged_file_path, os.path.join(self.danmu_path, 'superchat.ass').replace("\\", "/"),
                      self.ffmpeg_logfile_hander)
         self.times.sort(key=lambda x: x[0])
         self.live_start = self.times[0][0]
@@ -258,7 +286,7 @@ class Processor(BiliLive):
                 os.rmdir(self.splits_dir)
 
             if self.config.get('spec', {}).get('clipper', {}).get('enable_clipper', False):
-                danmu_list = parse_danmu(self.danmu_path)
+                danmu_list = parse_danmu(self.global_start, self.danmu_path)
                 counted_danmu_dict = count(
                     danmu_list, self.live_start, self.live_duration, self.config.get('spec', {}).get('parser', {}).get('interval', 60))
                 cut_points = get_cut_points(counted_danmu_dict, self.config.get('spec', {}).get('parser', {}).get('up_ratio', 2.5),
@@ -267,7 +295,7 @@ class Processor(BiliLive):
                     'clipper', {}).get('min_length', 60))
                 success = success and ret
             if self.config.get('spec', {}).get('manual_clipper', {}).get('enabled', False):
-                danmu_list = parse_danmu(self.danmu_path)
+                danmu_list = parse_danmu(self.global_start, self.danmu_path)
                 cut_points = get_manual_cut_points(danmu_list, self.config.get(
                     'spec', {}).get('manual_clipper', {}).get('uid', ""))
                 ret = self.cut(cut_points, 0)
@@ -283,7 +311,7 @@ class Processor(BiliLive):
 
 
 if __name__ == "__main__":
-    danmu_list = parse_danmu("data/data/danmu/22603245_2021-03-13_11-20-16")
+    danmu_list = parse_danmu(time.time(), "data/data/danmu/22603245_2021-03-13_11-20-16")
     # counted_danmu_dict = count(
     #     danmu_list, datetime.datetime.strptime("2021-03-13_11-20-16", "%Y-%m-%d_%H-%M-%S"), (datetime.datetime.strptime("2021-03-13_13-45-16", "%Y-%m-%d_%H-%M-%S")-datetime.datetime.strptime("2021-03-13_11-20-16", "%Y-%m-%d_%H-%M-%S")).total_seconds(), 30)
     # cut_points = get_cut_points(counted_danmu_dict, 2.5,

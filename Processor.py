@@ -206,9 +206,14 @@ def xml2ass(input_file: str, output_file: str, ffmpeg_logfile_hander) -> Union[
 def concat(merge_conf_path: str, merged_file_path: str, ass_file_path: str, ffmpeg_logfile_hander) -> Union[
     subprocess.CompletedProcess, subprocess.CalledProcessError]:
     try:
-        ret = subprocess.run(
-            f'ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -acodec aac -ab 260k -bsf:v h264_mp4toannexb -c:v h264_nvenc -b:v 5900k -f mpegts -vf "scale=1920:1080,subtitles={ass_file_path}" -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}',
-            shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
+        if os.path.exists(ass_file_path):
+            ret = subprocess.run(
+                f'ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -acodec aac -ab 260k -bsf:v h264_mp4toannexb -c:v h264_nvenc -b:v 5900k -f mpegts -vf "scale=1920:1080,subtitles={ass_file_path}" -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}',
+                shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
+        else:
+            ret = subprocess.run(
+                f'ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -acodec aac -ab 260k -bsf:v h264_mp4toannexb -c:v h264_nvenc -b:v 5900k -f mpegts -vf "scale=1920:1080" -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}',
+                shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
         return ret
     except subprocess.CalledProcessError as err:
         traceback.print_exc()

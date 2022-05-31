@@ -6,8 +6,14 @@
 使用说明：  
 1. 必须使用n卡，且支持cuda(其他显卡加速的偷懒没有做)
 2. 下载cuda并安装 https://developer.nvidia.cn/zh-cn/cuda-toolkit
-3. 在config文件夹内使用DDRecorderConfigManager.exe配置config.json
-4. 执行python main.py ./config/config.json
+3. 安装Python >= 3.8 https://www.python.org/downloads/release/python-3104/
+4. 执行pip install -r requirements.txt
+5. 在config文件夹内使用DDRecorderConfigManager.exe配置config.json
+6. 执行python main.py ./config/config.json
+
+感谢：  
+AsaChiri/DDRecorder  
+hihkm/DanmakuFactory
 
 关注雫るる喵，关注雫るる谢谢喵
 

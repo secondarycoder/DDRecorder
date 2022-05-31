@@ -1,3 +1,17 @@
+在前人的基础上新增了一些功能：  
+1. 将视频强制转码到bilibili 1080p最高画质版本避免被二压  
+2. 将sc压制到视频左下角，每个显示5s
+3. 强制使用n卡为视频转码加速
+
+使用说明：  
+1. 必须使用n卡，且支持cuda(其他显卡加速的偷懒没有做)
+2. 下载cuda并安装 https://developer.nvidia.cn/zh-cn/cuda-toolkit
+3. 在config文件夹内使用DDRecorderConfigManager.exe配置config.json
+4. 执行python main.py ./config/config.json
+
+关注雫るる喵，关注雫るる谢谢喵
+
+
 # DDRecorder
  Headless全自动B站直播录播、切片、上传一体工具
  

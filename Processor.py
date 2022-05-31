@@ -21,46 +21,51 @@ from time import gmtime
 def write_ass(ass_start: int, ass_end: int, user: str, price: int, sctext: str):
     ass_start_str = strftime("%H:%M:%S", gmtime(ass_start))
     ass_end_str = strftime("%H:%M:%S", gmtime(ass_end))
-    t1 = '{\move(-90,926,10,926)\c&HFCE8D8\shad0\p1}'
-    t6 = '{\pos(10,926)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HFCE8D8\shad0\p1}'
-    t2 = '{\move(-90,997,10,997)\shad0\p1\c&HE4A47A}'
-    t7 = '{\pos(10,997)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&HE4A47A}'
-    t3 = '{\move(-82,931,18,931)\c&H8A3619\\fs35\\b1\q2}'
-    t8 = '{\pos(18,931)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H8A3619\\fs35\\b1\q2}'
-    if price >= 1000:
-        t1 = '{\move(-90,926,10,926)\c&HE5E5FF\shad0\p1}'
-        t6 = '{\pos(10,926)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HE5E5FF\shad0\p1}'
-        t2 = '{\move(-90,997,10,997)\shad0\p1\c&H8C8CF7}'
-        t7 = '{\pos(10,997)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&H8C8CF7}'
-        t3 = '{\move(-82,931,18,931)\c&H0F0F75\\fs35\\b1\q2}'
-        t8 = '{\pos(18,931)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H0F0F75\\fs35\\b1\q2}'
-    elif price >= 500:
-        t1 = '{\move(-90,926,10,926)\c&HD4F6FF\shad0\p1}'
-        t6 = '{\pos(10,926)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HD4F6FF\shad0\p1}'
-        t2 = '{\move(-90,997,10,997)\shad0\p1\c&H8CCEF7}'
-        t7 = '{\pos(10,997)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&H8CCEF7}'
-        t3 = '{\move(-82,931,18,931)\c&H236C64\\fs35\\b1\q2}'
-        t8 = '{\pos(18,931)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H236C64\\fs35\\b1\q2}'
-    elif price >= 100:
-        t1 = '{\move(-90,926,10,926)\c&HCAF9F8\shad0\p1}'
-        t6 = '{\pos(10,926)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HCAF9F8\shad0\p1}'
-        t2 = '{\move(-90,997,10,997)\shad0\p1\c&H76E8E9}'
-        t7 = '{\pos(10,997)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&H76E8E9}'
-        t3 = '{\move(-82,931,18,931)\c&H1A8B87\\fs35\\b1\q2}'
-        t8 = '{\pos(18,931)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H1A8B87\\fs35\\b1\q2}'
-    else:
-        t1 = '{\move(-90,926,10,926)\c&HFCE8D8\shad0\p1}'
-        t6 = '{\pos(10,926)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HFCE8D8\shad0\p1}'
-        t2 = '{\move(-90,997,10,997)\shad0\p1\c&HE4A47A}'
-        t7 = '{\pos(10,997)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&HE4A47A}'
-        t3 = '{\move(-82,931,18,931)\c&H8A3619\\fs35\\b1\q2}'
-        t8 = '{\pos(18,931)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H8A3619\\fs35\\b1\q2}'
-    t4 = '{\move(-82,966,18,966)\c&H313131\\fs28\q2}'
-    t5 = '{\move(-82,997,18,997)\c&HFFFFFF\q2}'
-    t9 = '{\pos(18,966)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H313131\\fs28\q2}'
-    t10 = '{\pos(18,997)\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HFFFFFF\q2}'
+    ncount = int(sctext.count('\\N'))
+    h1 = str(961-ncount*35)
+    h2 = str(1032-ncount*35)
+    h3 = str(966-ncount*35)
+    h4 = str(1001-ncount*35)
 
-    assstr = f'Dialogue: 0,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t1}m 0 17 b 0 8 8 0 17 0 l 483 0 b 492 0 500 8 500 17 l 500 71 l 0 71\nDialogue: 0,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t2}m 0 0 l 500 0 l 500 61 b 500 70 492 78 483 78 l 17 78b 8 78 0 70 0 61\nDialogue: 1,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t3}{user}\nDialogue: 1,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t4}SuperChat CNY {price}\nDialogue: 1,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t5}{sctext}\n\nDialogue: 0,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t6}m 0 17 b 0 8 8 0 17 0 l 483 0 b 492 0 500 8 500 17 l 500 71 l 0 71\nDialogue: 0,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t7}m 0 0 l 500 0 l 500 61 b 500 70 492 78 483 78 l 17 78b 8 78 0 70 0 61\nDialogue: 1,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t8}{user}\nDialogue: 1,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t9}SuperChat CNY {price}\nDialogue: 1,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t10}{sctext}\n'
+    h5 = str(26+ncount*35)
+    h6 = str(35 + ncount * 35)
+    h7 = str(43 + ncount * 35)
+
+    s1='m 0 0 l 500 0 l 500 '+h5+' b 500 '+h6+' 492 '+h7+' 483 '+h7+' l 17 '+h7+'b 8 '+h7+' 0 '+h6+' 0 '+h5+''
+    if price >= 1000:
+        t1 = '{\move(-90,' + h1 + ',10,' + h1 + ')\c&HE5E5FF\shad0\p1}'
+        t6 = '{\pos(10,' + h1 + ')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HE5E5FF\shad0\p1}'
+        t2 = '{\move(-90,'+h2+',10,'+h2+')\shad0\p1\c&H8C8CF7}'
+        t7 = '{\pos(10,'+h2+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&H8C8CF7}'
+        t3 = '{\move(-82,'+h3+',18,'+h3+')\c&H0F0F75\\fs35\\b1\q2}'
+        t8 = '{\pos(18,'+h3+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H0F0F75\\fs35\\b1\q2}'
+    elif price >= 500:
+        t1 = '{\move(-90,' + h1 + ',10,' + h1 + ')\c&HD4F6FF\shad0\p1}'
+        t6 = '{\pos(10,' + h1 + ')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HD4F6FF\shad0\p1}'
+        t2 = '{\move(-90,'+h2+',10,'+h2+')\shad0\p1\c&H8CCEF7}'
+        t7 = '{\pos(10,'+h2+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&H8CCEF7}'
+        t3 = '{\move(-82,'+h3+',18,'+h3+')\c&H236C64\\fs35\\b1\q2}'
+        t8 = '{\pos(18,'+h3+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H236C64\\fs35\\b1\q2}'
+    elif price >= 100:
+        t1 = '{\move(-90,' + h1 + ',10,' + h1 + ')\c&HCAF9F8\shad0\p1}'
+        t6 = '{\pos(10,' + h1 + ')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HCAF9F8\shad0\p1}'
+        t2 = '{\move(-90,'+h2+',10,'+h2+')\shad0\p1\c&H76E8E9}'
+        t7 = '{\pos(10,'+h2+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&H76E8E9}'
+        t3 = '{\move(-82,'+h3+',18,'+h3+')\c&H1A8B87\\fs35\\b1\q2}'
+        t8 = '{\pos(18,'+h3+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H1A8B87\\fs35\\b1\q2}'
+    else:
+        t1 = '{\move(-90,' + h1 + ',10,' + h1 + ')\c&HFCE8D8\shad0\p1}'
+        t6 = '{\pos(10,' + h1 + ')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HFCE8D8\shad0\p1}'
+        t2 = '{\move(-90,'+h2+',10,'+h2+')\shad0\p1\c&HE4A47A}'
+        t7 = '{\pos(10,'+h2+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\shad0\p1\c&HE4A47A}'
+        t3 = '{\move(-82,'+h3+',18,'+h3+')\c&H8A3619\\fs35\\b1\q2}'
+        t8 = '{\pos(18,'+h3+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H8A3619\\fs35\\b1\q2}'
+    t4 = '{\move(-82,'+h4+',18,'+h4+')\c&H313131\\fs28\q2}'
+    t5 = '{\move(-82,'+h2+',18,'+h2+')\c&HFFFFFF\q2}'
+    t9 = '{\pos(18,'+h4+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&H313131\\fs28\q2}'
+    t10 = '{\pos(18,'+h2+')\clip(m 10 17 b 10 8 18 0 27 0 l 493 0 b 502 0 510 8 510 17 l 510 1080 l 10 1080)\c&HFFFFFF\q2}'
+
+    assstr = f'Dialogue: 0,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t1}m 0 17 b 0 8 8 0 17 0 l 483 0 b 492 0 500 8 500 17 l 500 71 l 0 71\nDialogue: 0,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t2}{s1}\nDialogue: 1,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t3}{user}\nDialogue: 1,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t4}SuperChat CNY {price}\nDialogue: 1,{ass_start_str}.25,{ass_start_str}.50,message_box,,0000,0000,0000,,{t5}{sctext}\n\nDialogue: 0,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t6}m 0 17 b 0 8 8 0 17 0 l 483 0 b 492 0 500 8 500 17 l 500 71 l 0 71\nDialogue: 0,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t7}{s1}\nDialogue: 1,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t8}{user}\nDialogue: 1,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t9}SuperChat CNY {price}\nDialogue: 1,{ass_start_str}.50,{ass_end_str}.00,message_box,,0000,0000,0000,,{t10}{sctext}\n'
     return assstr
 
 
@@ -98,7 +103,7 @@ def parse_danmu(start_time: datetime.datetime, dir_name):
                 user = str(obj['user_name'])
                 price = int(obj['price'])
                 message = str(obj['text'])
-                sctext = '\\N'.join([message[i:i + 15] for i in range(0, len(message), 15)])
+                sctext = '\\N'.join([message[i:i + 17] for i in range(0, len(message), 17)])
                 last_endts = endts
                 foc.write(write_ass(ass_start, ass_end, user, price, sctext))
         foc.close()

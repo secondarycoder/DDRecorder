@@ -95,9 +95,6 @@ def parse_danmu(start_time: datetime.datetime, dir_name):
                 endts = startts + interval
                 ass_start = startts - int(start_time.timestamp())
                 ass_end = endts - int(start_time.timestamp())
-                print("begin:" + str(start_time.timestamp()))
-                print("ass_start:" + str(ass_start))
-                print("ass_end:" + str(ass_end))
                 user = str(obj['user_name'])
                 price = int(obj['price'])
                 message = str(obj['text'])

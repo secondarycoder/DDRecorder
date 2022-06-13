@@ -26,6 +26,7 @@ class BiliLive(BaseLive):
         logging.debug(self.generate_log("房间API消息："+response['msg']))
         if response['msg'] == 'ok':
             data['room_name'] = response['data']['title']
+            data['room_cover'] = response['data']['user_cover']
             data['site_name'] = self.site_name
             data['site_domain'] = self.site_domain
             data['status'] = response['data']['live_status'] == 1

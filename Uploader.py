@@ -3,6 +3,7 @@ import logging
 import os
 import traceback
 import json
+import requests
 from biliup.plugins.bili_webup import BiliBili, Data
 
 import utils
@@ -84,6 +85,11 @@ class Uploader(BiliLive):
                         'uploader', {}).get('clips', {}).get('cover', "")):
                     clips_video_data.cover = self.uploader.cover_up(self.config.get('spec', {}).get(
                         'uploader', {}).get('clips', {}).get('cover', ""))
+                r = requests.get(self.room_info['room_cover'])
+                with open('./data/cover.png', 'wb') as coverfile:
+                    coverfile.write(r.content)
+                    coverfile.close
+                clips_video_data.cover = self.uploader.cover_up('./data/cover.png')
                 clips_video_ret = self.uploader.submit()
                 if clips_video_ret['code'] == 0 and clips_video_ret['data'] is not None:
                     return_dict["clips"] = {
@@ -108,6 +114,7 @@ class Uploader(BiliLive):
                 self.uploader.video = record_video_data
 
                 filelists = os.listdir(self.splits_dir)
+                filelists.sort(key=lambda x: int(x[-8:-4]))
                 for filename in filelists:
                     if os.path.getsize(os.path.join(self.splits_dir, filename)) < 1024*1024:
                         continue
@@ -122,6 +129,11 @@ class Uploader(BiliLive):
                         'uploader', {}).get('record', {}).get('cover', "")):
                     record_video_data.cover = self.uploader.cover_up(self.config.get('spec', {}).get(
                         'uploader', {}).get('record', {}).get('cover', ""))
+                r = requests.get(self.room_info['room_cover'])
+                with open('./data/cover.png', 'wb') as coverfile:
+                    coverfile.write(r.content)
+                    coverfile.close
+                record_video_data.cover = self.uploader.cover_up('./data/cover.png')
                 record_video_ret = self.uploader.submit()
                 if record_video_ret['code'] == 0 and record_video_ret['data'] is not None:
                     return_dict["record"] = {

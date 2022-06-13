@@ -135,7 +135,7 @@ class Uploader(BiliLive):
                 with open('./data/cover.png', 'wb') as coverfile:
                     coverfile.write(r.content)
                     coverfile.close
-                subprocess.run(f'ffmpeg -y -i ./data/cover.png -vf "drawtext=fontfile=msyhbd.ttc:text="SC版":x=520:y=50:fontsize=70:fontcolor=yellow:shadowy=2" ./data/coversc.png')
+                subprocess.run(f'ffmpeg -y -i ./data/cover.png -vf "drawtext=fontfile=msyhbd.ttc:text="SC版":x=450:y=50:fontsize=70:fontcolor=yellow:shadowy=2" ./data/coversc.png')
                 record_video_data.cover = self.uploader.cover_up('./data/coversc.png')
                 record_video_ret = self.uploader.submit()
                 if record_video_ret['code'] == 0 and record_video_ret['data'] is not None:

@@ -72,6 +72,9 @@ def write_ass(ass_start: int, ass_end: int, user: str, price: int, sctext: str):
 def parse_danmu(start_time: datetime.datetime, dir_name):
     danmu_list = []
     if os.path.exists(os.path.join(dir_name, 'danmu.jsonl')):
+        doc = Document()
+        i = doc.createElement("i")
+        doc.appendChild(i)
         with jsonlines.open(os.path.join(dir_name, 'danmu.jsonl')) as reader:
             for obj in reader:
                 danmu_list.append({
@@ -79,6 +82,19 @@ def parse_danmu(start_time: datetime.datetime, dir_name):
                     "time": obj['properties']['time'] // 1000,
                     "uid": str(obj['user_info']['user_id'])
                 })
+                d = doc.createElement("d")
+                danmutime = str((int(obj['properties']['time']//1000) - int(start_time.timestamp())))
+                danmutype = str(obj['properties']['type'])
+                danmusize = str(obj['properties']['size'])
+                danmucolor= str(obj['properties']['color'])
+                pvalue = "{},{},{},{},0,0,0,0".format(danmutime, danmutype, danmusize, danmucolor)
+                d.setAttribute('p', pvalue)
+                text = doc.createTextNode(str(obj['text']))
+                d.appendChild(text)
+                i.appendChild(d)
+            f = open(os.path.join(dir_name, 'danmu.xml'), 'w', encoding='utf-8')
+            doc.writexml(f, indent='\t', newl='\n', addindent='\t', encoding='utf-8')
+            f.close()
     if os.path.exists(os.path.join(dir_name, 'superchat.jsonl')):
         foc = open(os.path.join(dir_name, 'superchat.ass'), 'w', encoding='utf-8')
         foc.write(
@@ -206,16 +222,16 @@ def xml2ass(input_file: str, output_file: str, ffmpeg_logfile_hander) -> Union[
         return err
 
 
-def concat(merge_conf_path: str, merged_file_path: str, ass_file_path: str, ffmpeg_logfile_hander) -> Union[
+def concat(merge_conf_path: str, merged_file_path: str, danmu_ass_path: str, ass_file_path: str, ffmpeg_logfile_hander) -> Union[
     subprocess.CompletedProcess, subprocess.CalledProcessError]:
     try:
         if os.path.exists(ass_file_path):
             ret = subprocess.run(
-                f'ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -acodec aac -ab 260k -bsf:v h264_mp4toannexb -c:v h264_nvenc -b:v 5900k -f mpegts -vf "scale=-1:1080,subtitles={ass_file_path}" -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}',
+                f'ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -acodec aac -ab 260k -bsf:v h264_mp4toannexb -c:v h264_nvenc -b:v 5900k -f mpegts -vf "scale=-1:1080,subtitles={danmu_ass_path},subtitles={ass_file_path}" -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}',
                 shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
         else:
             ret = subprocess.run(
-                f'ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -acodec aac -ab 260k -bsf:v h264_mp4toannexb -c:v h264_nvenc -b:v 5900k -f mpegts -vf "scale=-1:1080" -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}',
+                f'ffmpeg -y -f concat -safe 0 -i {merge_conf_path} -acodec aac -ab 260k -bsf:v h264_mp4toannexb -c:v h264_nvenc -b:v 5900k -f mpegts -vf "scale=-1:1080,subtitles={danmu_ass_path}" -fflags +igndts -avoid_negative_ts make_zero {merged_file_path}',
                 shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
         return ret
     except subprocess.CalledProcessError as err:
@@ -282,9 +298,10 @@ class Processor(BiliLive):
                     f.write(
                         f"file '{os.path.abspath(ts_path)}'\n")
         parse_danmu(self.global_start, self.danmu_path)
-        # xml2ass(os.path.join(self.danmu_path, 'superchat.xml'), os.path.join(self.danmu_path, 'superchat.ass'),
-        #         self.ffmpeg_logfile_hander)
+        xml2ass(os.path.join(self.danmu_path, 'danmu.xml'), os.path.join(self.danmu_path, 'danmu.ass'),
+                self.ffmpeg_logfile_hander)
         ret = concat(self.merge_conf_path, self.merged_file_path,
+                     os.path.join(self.danmu_path, 'danmu.ass').replace("\\", "/"),
                      os.path.join(self.danmu_path, 'superchat.ass').replace("\\", "/"),
                      self.ffmpeg_logfile_hander)
         self.times.sort(key=lambda x: x[0])

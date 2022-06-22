@@ -278,6 +278,7 @@ class Processor(BiliLive):
             self.room_id, self.global_start, self.config.get('root', {}).get('data_path', "./"))
         self.times = []
         self.live_start = self.global_start
+        self.record_start = self.global_start
         self.live_duration = 0
         logging.basicConfig(level=utils.get_log_level(config),
                             format='%(asctime)s %(thread)d %(threadName)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -294,6 +295,7 @@ class Processor(BiliLive):
     def pre_pre_concat(self) -> Union[subprocess.CompletedProcess, subprocess.CalledProcessError]:
         record_dir = self.record_dir
         filelist = sorted(os.listdir(record_dir))
+        self.record_start = get_start_time(filelist[0])
         print(filelist)
         oklist = []
         displayWidth = 0
@@ -353,7 +355,7 @@ class Processor(BiliLive):
                     self.times.append((start_time, duration))
                     f.write(
                         f"file '{os.path.abspath(ts_path)}'\n")
-        parse_danmu(self.global_start, self.danmu_path)
+        parse_danmu(self.record_start, self.danmu_path)
         xml2ass(os.path.join(self.danmu_path, 'danmu.xml'), os.path.join(self.danmu_path, 'danmu.ass'),
                 self.ffmpeg_logfile_hander)
         ret = concat(self.merge_conf_path, self.merged_file_path,

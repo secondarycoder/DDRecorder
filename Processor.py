@@ -83,10 +83,10 @@ def parse_danmu(start_time: datetime.datetime, dir_name):
                     "uid": str(obj['user_info']['user_id'])
                 })
                 d = doc.createElement("d")
-                danmutime = str((int(obj['properties']['time']//1000) - int(start_time.timestamp())))
+                danmutime = str((int(obj['properties']['time'] // 1000) - int(start_time.timestamp())))
                 danmutype = str(obj['properties']['type'])
                 danmusize = str(obj['properties']['size'])
-                danmucolor= str(obj['properties']['color'])
+                danmucolor = str(obj['properties']['color'])
                 pvalue = "{},{},{},{},0,0,0,0".format(danmutime, danmutype, danmusize, danmucolor)
                 d.setAttribute('p', pvalue)
                 text = doc.createTextNode(str(obj['text']))
@@ -222,7 +222,17 @@ def xml2ass(input_file: str, output_file: str, ffmpeg_logfile_hander) -> Union[
         return err
 
 
-def concat(merge_conf_path: str, merged_file_path: str, danmu_ass_path: str, ass_file_path: str, ffmpeg_logfile_hander) -> Union[
+def write_video(outfile: str, startfile: str, endfile: str, displayWidth: str, displayHeight: str, fps: str,
+                ffmpeg_logfile_hander) -> Union[
+    subprocess.CompletedProcess, subprocess.CalledProcessError]:
+    writetime = int(get_start_time_int(endfile) - get_start_time_int(startfile))
+    subprocess.run(
+        f'ffmpeg -hwaccel cuda -y -loop 1 -i sorry.png -bsf:v h264_mp4toannexb -c:v h264_nvenc -vf "scale={displayWidth}:{displayHeight}" -t {writetime} -r {fps} -f mpegts {outfile}',
+        shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
+
+
+def concat(merge_conf_path: str, merged_file_path: str, danmu_ass_path: str, ass_file_path: str,
+           ffmpeg_logfile_hander) -> Union[
     subprocess.CompletedProcess, subprocess.CalledProcessError]:
     try:
         if os.path.exists(ass_file_path):
@@ -243,6 +253,12 @@ def get_start_time(filename: str) -> datetime.datetime:
     base = os.path.splitext(filename)[0]
     return datetime.datetime.strptime(
         " ".join(base.split("_")[1:3]), '%Y-%m-%d %H-%M-%S')
+
+
+def get_start_time_int(filename: str) -> datetime.datetime:
+    base = os.path.splitext(filename)[0]
+    return datetime.datetime.strptime(
+        " ".join(base.split("_")[1:3]), '%Y-%m-%d %H-%M-%S').timestamp()
 
 
 class Processor(BiliLive):
@@ -275,13 +291,53 @@ class Processor(BiliLive):
                          "FFMpeg_" + datetime.datetime.now(
                          ).strftime('%Y-%m-%d_%H-%M-%S') + '.log'), mode="a", encoding="utf-8")
 
+    def pre_pre_concat(self) -> Union[subprocess.CompletedProcess, subprocess.CalledProcessError]:
+        record_dir = self.record_dir
+        filelist = sorted(os.listdir(record_dir))
+        print(filelist)
+        oklist = []
+        displayWidth = 0
+        displayHeight = 0
+        fps = 0
+        for i in range(len(filelist)):
+            if os.path.splitext(
+                    os.path.join(record_dir, filelist[i]))[1] == ".flv" and os.path.getsize(
+                os.path.join(record_dir, filelist[i])) > 100 * 1024:
+                probe = ffmpeg.probe(os.path.join(record_dir, filelist[i]))
+                displayWidth = probe['format']['tags']['displayWidth']
+                displayHeight = probe['format']['tags']['displayHeight']
+                fps = probe['format']['tags']['fps']
+                oklist.append(i)
+        print(oklist)
+        print(displayWidth)
+        print(displayHeight)
+        print(fps)
+
+        if oklist[0] != 0:
+            startfile1 = filelist[0]
+            endfile1 = filelist[oklist[0]]
+            print(startfile1)
+            print(endfile1)
+            write_video(os.path.join(record_dir, startfile1), startfile1, endfile1, displayWidth, displayHeight, fps,
+                        self.ffmpeg_logfile_hander)
+        if len(oklist) > 1:
+            for i in range(len(oklist) - 1):
+                if oklist[i + 1] - oklist[i] > 1:
+                    startfile = filelist[oklist[i] + 1]
+                    endfile = filelist[oklist[i + 1]]
+                    print(startfile)
+                    print(endfile)
+                    write_video(os.path.join(record_dir, startfile), startfile, endfile, displayWidth,
+                                displayHeight,
+                                fps, self.ffmpeg_logfile_hander)
+
     def pre_concat(self) -> Union[subprocess.CompletedProcess, subprocess.CalledProcessError]:
         filelist = os.listdir(self.record_dir)
         with open(self.merge_conf_path, "w", encoding="utf-8") as f:
             for filename in filelist:
                 if os.path.splitext(
                         os.path.join(self.record_dir, filename))[1] == ".flv" and os.path.getsize(
-                    os.path.join(self.record_dir, filename)) > 1024 * 1024:
+                    os.path.join(self.record_dir, filename)) > 100 * 1024:
                     ts_path = os.path.splitext(os.path.join(
                         self.record_dir, filename))[0] + ".ts"
                     ret = flv2ts(os.path.join(
@@ -369,6 +425,9 @@ class Processor(BiliLive):
 
     def run(self) -> bool:
         try:
+            print('开始写图片')
+            self.pre_pre_concat()
+            print('结束写图片')
             ret = self.pre_concat()
             success = isinstance(ret, subprocess.CompletedProcess)
             if success and not self.config.get('spec', {}).get('recorder', {}).get('keep_raw_record', False):
@@ -418,10 +477,62 @@ class Processor(BiliLive):
 
 
 if __name__ == "__main__":
-    danmu_list = parse_danmu(time.time(), "data/data/danmu/22603245_2021-03-13_11-20-16")
+    # probe = ffmpeg.probe("data/records/402748_2022-06-22_16-10-40/402748_2022-06-22_16-12-25.flv")
+    # displayWidth = probe['format']['tags']['displayWidth']
+    # displayHeight = probe['format']['tags']['displayHeight']
+    # fps = probe['format']['tags']['fps']
+    # print(probe)
+    # print(displayWidth)
+    # print(displayHeight)
+    # print(fps)
+
+    record_dir = "data/records/21013446_2022-06-22_23-01-26"
+    filelist = sorted(os.listdir(record_dir))
+    print(filelist)
+    oklist = []
+    displayWidth = 0
+    displayHeight = 0
+    fps = 0
+    for i in range(len(filelist)):
+        if os.path.splitext(
+                os.path.join(record_dir, filelist[i]))[1] == ".flv" and os.path.getsize(
+            os.path.join(record_dir, filelist[i])) > 100 * 1024:
+            probe = ffmpeg.probe(os.path.join(record_dir, filelist[i]))
+            print(probe)
+            displayWidth = probe['format']['tags']['displayWidth']
+            displayHeight = probe['format']['tags']['displayHeight']
+            fps = probe['format']['tags']['fps']
+            oklist.append(i)
+    print(oklist)
+    print(displayWidth)
+    print(displayHeight)
+    print(fps)
+
+    if oklist[0] != 0:
+        startfile1 = filelist[0]
+        endfile1 = filelist[1]
+        print(startfile1)
+        print(endfile1)
+        write_video(os.path.join(record_dir, startfile1), startfile1, endfile1, displayWidth, displayHeight, fps,
+                    open('log/FFMpeg_2022-06-23_00-13-03.log'))
+        if len(oklist) > 1:
+            for i in range(len(oklist) - 1):
+                if oklist[i + 1] - oklist[i] > 1:
+                    startfile = filelist[oklist[i] + 1]
+                    endfile = filelist[oklist[i + 1]]
+                    print(startfile)
+                    print(endfile)
+                    write_video(os.path.join(record_dir, startfile), startfile, endfile, displayWidth, displayHeight,
+                                fps, open('log/FFMpeg_2022-06-23_00-13-03.log'))
+
+        # print(filelist[i])
+        # print(get_start_time_int(filelist[i]))
+        # print(int(get_start_time_int(filelist[i+1])-get_start_time_int(filelist[i])))
+
+    # danmu_list = parse_danmu(time.time(), "data/data/danmu/22603245_2021-03-13_11-20-16")
     # counted_danmu_dict = count(
     #     danmu_list, datetime.datetime.strptime("2021-03-13_11-20-16", "%Y-%m-%d_%H-%M-%S"), (datetime.datetime.strptime("2021-03-13_13-45-16", "%Y-%m-%d_%H-%M-%S")-datetime.datetime.strptime("2021-03-13_11-20-16", "%Y-%m-%d_%H-%M-%S")).total_seconds(), 30)
     # cut_points = get_cut_points(counted_danmu_dict, 2.5,
     #                             0.75, 5)
-    cut_points = get_manual_cut_points(danmu_list, "8559982")
-    print(cut_points)
+    # cut_points = get_manual_cut_points(danmu_list, "8559982")
+    # print(cut_points)

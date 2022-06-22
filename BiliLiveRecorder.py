@@ -55,7 +55,7 @@ class BiliLiveRecorder(BiliLive):
                     urls = self.get_live_urls()
                     filename = utils.generate_filename(self.room_id)
                     c_filename = os.path.join(self.record_dir, filename)
-                    self.record(urls[0], c_filename)
+                    self.record(urls[-1], c_filename)
                     logging.info(self.generate_log('录制完成' + c_filename))
                 else:
                     logging.info(self.generate_log('下播了'))

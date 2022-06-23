@@ -294,6 +294,19 @@ class Processor(BiliLive):
 
     def pre_pre_concat(self) -> Union[subprocess.CompletedProcess, subprocess.CalledProcessError]:
         record_dir = self.record_dir
+
+        # 删除前面连续的空文件
+        filelist2 = sorted(os.listdir(record_dir))
+        for i in range(len(filelist2)):
+            if os.path.splitext(
+                    os.path.join(record_dir, filelist2[i]))[1] == ".flv" and os.path.getsize(
+                os.path.join(record_dir, filelist2[i])) <= 100 * 1024:
+                os.remove(os.path.join(record_dir, filelist2[i]))
+                print('去掉空文件:'+os.path.join(record_dir, filelist2[i]))
+            else:
+                break
+
+        #开始补全时长
         filelist = sorted(os.listdir(record_dir))
         self.record_start = get_start_time(filelist[0])
         print(filelist)

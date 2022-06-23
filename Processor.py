@@ -227,7 +227,7 @@ def write_video(outfile: str, startfile: str, endfile: str, displayWidth: str, d
     subprocess.CompletedProcess, subprocess.CalledProcessError]:
     writetime = int(get_start_time_int(endfile) - get_start_time_int(startfile))
     subprocess.run(
-        f'ffmpeg -hwaccel cuda -y -loop 1 -i sorry.png -bsf:v h264_mp4toannexb -c:v h264_nvenc -vf "scale={displayWidth}:{displayHeight}" -t {writetime} -r {fps} -f mpegts {outfile}',
+        f'ffmpeg -hwaccel cuda -y -r {fps} -loop 1 -i sorry.png -f lavfi -i anullsrc=sample_rate=48000 -acodec aac -bsf:v h264_mp4toannexb -c:v h264_nvenc -vf "scale={displayWidth}:{displayHeight}" -t {writetime} -f mpegts {outfile}',
         shell=True, check=True, stdout=ffmpeg_logfile_hander, stderr=ffmpeg_logfile_hander)
 
 
